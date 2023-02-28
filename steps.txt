@@ -1,0 +1,107 @@
+1 First, create a new Python package with the following directory structure:
+graphql_code_generator/
+    __init__.py
+    generate_code.py
+    setup.py
+
+2 . In setup.py, add the following code:
+
+from setuptools import setup, find_packages
+
+setup(
+    name='graphql_code_generator',
+    version='0.1',
+    packages=find_packages(),
+    install_requires=[
+        'graphene',
+        'graphql',
+    ],
+    entry_points={
+        'console_scripts': [
+            'generate_code=graphql_code_generator.generate_code:main'
+        ]
+    }
+)
+
+This sets up the package metadata, specifies the required dependencies, and defines a command-line entry point that runs the generate_code function in generate_code.py.
+
+3. In __init__.py, add the following code:
+
+from .generate_code import generate_python_code
+
+This makes the generate_python_code function available when you import the graphql_code_generator package.
+
+4. In generate_code.py, add the following code:
+
+import os
+import graphene
+import argparse
+from graphql import build_ast_schema, parse, print_ast
+
+def generate_resolvers(schema_definition, output_dir):
+    # Use graphql library to build AST-based schema
+    ast_schema = build_ast_schema(parse(schema_definition))
+
+    # Use Graphene to generate Python types and resolvers based on your schema
+    schema = graphene.Schema.from_ast(ast_schema)
+
+    # Create the directory if it doesn't exist
+    if not os.path.exists(output_dir):
+        os.makedirs(output_dir)
+
+    # Generate a separate Python file for each type in the schema
+    for type_name, graphql_type in ast_schema.type_map.items():
+        if graphql_type.name.startswith('__'):
+            continue
+        type_file = type_name.lower() + '_resolver.py'
+        with open(os.path.join(output_dir, type_file), 'w') as f:
+            f.write(f'# Add your business logic for {type_name} here\n')
+            f.write('from generated_code.mutation import Mutation\n\n')
+            f.write(f'class {type_name}Resolver:\n')
+            for field_name, field_definition in graphql_type.fields.items():
+                arg_str = ', '.join([f'{arg.name}: {arg.type}' for arg in field_definition.args])
+                f.write(f'    def resolve_{field_name}(self, info, {arg_str}):\n')
+                f.write(f'        # Add your business logic here\n')
+                f.write(f'        return None\n\n')
+            f.write('mutation = Mutation.Field()\n\n')
+            f.write('# Define your GraphQL schema using the generated resolvers\n')
+            f.write('schema = graphene.Schema(query=query_type, mutation=mutation_type)\n')
+
+    # Print a confirmation message
+    print(f'Python code generated and saved to files in {output_dir}.')
+
+
+def main():
+    parser = argparse.ArgumentParser(description='Generate Python resolvers based on a GraphQL schema.')
+    parser.add_argument('schema_file', metavar='SCHEMA_FILE', type=str,
+                        help='the path to the GraphQL schema file')
+    parser.add_argument('output_dir', metavar='OUTPUT_DIR', type=str,
+                        help='the directory to save the generated Python files')
+    args = parser.parse_args()
+
+    with open(args.schema_file, 'r') as f:
+        schema_definition = f.read()
+
+    generate_resolvers(schema_definition, args.output_dir)
+
+if __name__ == '__main__':
+    main()
+
+
+This program takes the path to the schema file and the output directory as command-line arguments, and generates Python resolvers based on the schema definition provided. The generated resolvers are stored in separate Python files for each type in the schema in the specified output directory.
+
+You can use this program as a tool or library by calling the generate_resolvers function with the schema definition and output directory as arguments. The function returns None and generates Python resolvers in the specified output directory.
+
+To run the program from the command line, save the code in a file called generate_resolvers.py, and then run the following command:
+
+
+4. To run the program from the command line, save the code in a file called generate_resolvers.py, and then run the following command:
+
+python generate_resolvers.py schema.graphqls generated_code
+
+This will generate Python resolvers based on the schema definition in the schema.graphqls file, and store them in separate Python files in the generated_code directory.
+
+Note that you would need to modify the resolver functions in each *_resolver.py file to match your own business logic, and modify the mutation types and arguments to match your own GraphQL schema. Also, you would need to ensure that you have the graphql
+
+
+
