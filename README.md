@@ -41,7 +41,9 @@ pip install .
 ⚙️ Usage
 Prepare a GraphQL schema file (e.g., schema.graphql) and run:
 
+```bash
 python generate_code.py --input schema.graphql --output generated_code.py
+```
 
 This will generate Python classes for each type, query, and mutation found in the schema.
 
