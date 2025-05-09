@@ -1,7 +1,7 @@
 # ⚙️ GraphQL Code Generator
 
 A lightweight Python tool to **automatically generate Python classes and data access code** from a GraphQL schema. Ideal for developers who want to streamline their integration with GraphQL APIs by reducing boilerplate code.
-
+ 
 ---
 
 ## 🚀 Features
